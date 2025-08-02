@@ -30,7 +30,7 @@ const PrayerTimes = () => {
           Asr: '15:45',
           Maghrib: '18:30',
           Isha: '20:00',
-          city: cities[selectedCity]?.name || 'Gujranwala'
+          city: cities[selectedCity]?.name || 'Lahore'
         });
       } finally {
         setLoading(false);
@@ -274,7 +274,7 @@ const PrayerTimes = () => {
                 <Card.Body className="text-center">
                   <div className="d-flex align-items-center justify-content-center">
                     <FaMapMarkerAlt className="me-2 text-primary" />
-                    <span>Prayer times for {prayerTimes?.city || 'Gujranwala'}</span>
+                    <span>Prayer times for {prayerTimes?.city || 'Lahore'}</span>
                   </div>
                   <small className="text-muted">Times are calculated based on your selected city</small>
                 </Card.Body>

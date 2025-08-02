@@ -918,8 +918,8 @@ export const islamicVideos = [
   {
     id: 1,
     title: "Beautiful Quran Recitation - Surah Rahman",
-    thumbnail: "https://img.youtube.com/vi/1ju4VlClNJE/maxresdefault.jpg",
-    url: "https://www.youtube.com/watch?v=1ju4VlClNJE",
+    thumbnail: "https://img.youtube.com/vi/VtOmBGPrwTQ/maxresdefault.jpg",
+    url: "https://www.youtube.com/watch?v=VtOmBGPrwTQ",
     description: "Peaceful recitation of Surah Rahman by Sheikh Mishary Rashid",
     duration: "28:45",
     views: "2.3M views"
@@ -927,8 +927,8 @@ export const islamicVideos = [
   {
     id: 2,
     title: "The Story of Prophet Muhammad (PBUH)",
-    thumbnail: "https://img.youtube.com/vi/TpcbfxtdoI8/maxresdefault.jpg",
-    url: "https://www.youtube.com/watch?v=TpcbfxtdoI8",
+    thumbnail: "https://img.youtube.com/vi/VOUp3ZZ9t3A/maxresdefault.jpg",
+    url: "https://www.youtube.com/watch?v=VOUp3ZZ9t3A",
     description: "Inspiring documentary about the life of Prophet Muhammad",
     duration: "45:30",
     views: "1.8M views"
@@ -936,11 +936,38 @@ export const islamicVideos = [
   {
     id: 3,
     title: "Beautiful Islamic Nasheed - Tala al Badru",
-    thumbnail: "https://img.youtube.com/vi/7hHECMVOq7g/maxresdefault.jpg",
-    url: "https://www.youtube.com/watch?v=7hHECMVOq7g",
+    thumbnail: "https://img.youtube.com/vi/gC74PGMpKK4/maxresdefault.jpg",
+    url: "https://www.youtube.com/watch?v=gC74PGMpKK4",
     description: "Traditional Islamic nasheed with beautiful Arabic vocals",
     duration: "8:15",
     views: "650K views"
+  },
+  {
+    id: 4,
+    title: "Beautiful Quran Recitation - Surah Al-Mulk",
+    thumbnail: "https://img.youtube.com/vi/uGfly82vLGk/maxresdefault.jpg",
+    url: "https://www.youtube.com/watch?v=uGfly82vLGk",
+    description: "Soothing recitation of Surah Al-Mulk for protection",
+    duration: "15:30",
+    views: "1.5M views"
+  },
+  {
+    id: 5,
+    title: "Names of Allah (Asma ul Husna)",
+    thumbnail: "https://img.youtube.com/vi/pKojmg1vYYY/maxresdefault.jpg",
+    url: "https://www.youtube.com/watch?v=pKojmg1vYYY",
+    description: "Beautiful recitation of 99 Names of Allah",
+    duration: "12:20",
+    views: "3.2M views"
+  },
+  {
+    id: 6,
+    title: "Islamic Lectures - The Purpose of Life",
+    thumbnail: "https://img.youtube.com/vi/ifllgTA2pmY/maxresdefault.jpg",
+    url: "https://www.youtube.com/watch?v=ifllgTA2pmY",
+    description: "Deep reflection on the purpose of our existence",
+    duration: "35:45",
+    views: "980K views"
   }
 ];
 

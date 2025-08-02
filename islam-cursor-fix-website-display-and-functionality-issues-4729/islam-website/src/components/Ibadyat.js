@@ -259,7 +259,7 @@ const Ibadyat = () => {
                   </h3>
                   <p className="mb-0">
                     <FaMapMarkerAlt className="me-2" />
-                    Gujranwala, Lahore, Islamabad Region
+                    Lahore, Islamabad Region
                   </p>
                 </Card.Header>
                 <Card.Body>

@@ -352,9 +352,9 @@ const Home = () => {
         </Container>
       </section>
 
-      <Container className="py-5">
+      <Container className="py-3">
         {/* Enhanced Search Bar */}
-        <Row className="justify-content-center mb-5">
+        <Row className="justify-content-center mb-3">
           <Col lg={8}>
             <motion.div 
               className="search-container"
@@ -426,7 +426,7 @@ const Home = () => {
         </Row>
 
         {/* Enhanced Quran Verse */}
-        <Row className="mb-5">
+        <Row className="mb-3">
           <Col>
             <motion.div
               initial={{ opacity: 0, y: 50 }}
@@ -449,7 +449,7 @@ const Home = () => {
         </Row>
 
         {/* Enhanced Islamic Videos */}
-        <Row className="mb-5">
+        <Row className="mb-3">
           <Col>
             <motion.div
               initial={{ opacity: 0 }}

@@ -188,7 +188,7 @@ const Footer = () => {
                   <FaEnvelope className="me-2" />
                   support@islam360.com
                 </p>
-                <p>Location: Gujranwala, Pakistan</p>
+                <p>Location: Lahore, Pakistan</p>
               </div>
             </motion.div>
           </Col>
