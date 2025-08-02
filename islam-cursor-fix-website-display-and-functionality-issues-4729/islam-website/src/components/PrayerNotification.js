@@ -20,11 +20,31 @@ const PrayerNotification = () => {
       setAudioContext(context);
     }
 
+    // Register service worker for better mobile notifications
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('Service Worker registered successfully:', registration);
+        })
+        .catch((error) => {
+          console.log('Service Worker registration failed:', error);
+        });
+    }
+
     // Request notification permission
     if ('Notification' in window) {
       if (Notification.permission === 'default') {
         Notification.requestPermission().then(permission => {
           setNotificationPermission(permission);
+          
+          // For mobile devices, also request persistent notification permission
+          if (permission === 'granted' && 'serviceWorker' in navigator) {
+            navigator.serviceWorker.ready.then(registration => {
+              if ('showNotification' in registration) {
+                console.log('Service Worker notifications supported');
+              }
+            });
+          }
         });
       } else {
         setNotificationPermission(Notification.permission);
@@ -68,64 +88,41 @@ const PrayerNotification = () => {
     if (!prayerTimes) return;
 
     const now = new Date();
-    const currentTime = now.toLocaleTimeString('en-US', { 
-      hour12: false, 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-
-    // Check if current time matches any prayer time
+    const reminderMinutes = parseInt(localStorage.getItem('reminderMinutes') || '0');
+    
     Object.entries(prayerTimes).forEach(([prayerName, prayerTime]) => {
       if (prayerName === 'date') return;
 
-      // Convert prayer time to 24-hour format for comparison
-      const prayerTime24 = convertTo24Hour(prayerTime);
+      const prayerDateTime = parseTimeToDate(prayerTime);
+      const timeDiff = prayerDateTime.getTime() - now.getTime();
+      const minutesDiff = Math.floor(timeDiff / (1000 * 60));
       
-      // Check if it's exactly prayer time and we haven't notified for this prayer today
-      if (currentTime === prayerTime24) {
-        const today = now.toDateString();
+      const today = now.toDateString();
+
+      // Check for exact prayer time (within 1 minute window for accuracy)
+      if (Math.abs(minutesDiff) <= 0) {
         const notificationKey = `${prayerName}-${today}`;
         
         if (lastNotifiedPrayer !== notificationKey) {
           triggerPrayerNotification(prayerName, prayerTime);
           setLastNotifiedPrayer(notificationKey);
-          
-          // Store in localStorage to persist across page reloads
           localStorage.setItem('lastNotifiedPrayer', notificationKey);
         }
       }
-    });
-
-    // Also check for upcoming prayer (5 minutes before)
-    checkUpcomingPrayer();
-  };
-
-  const checkUpcomingPrayer = () => {
-    if (!prayerTimes) return;
-
-    const now = new Date();
-    const currentTime = now.getTime();
-
-    Object.entries(prayerTimes).forEach(([prayerName, prayerTime]) => {
-      if (prayerName === 'date') return;
-
-      const prayerDateTime = parseTimeToDate(prayerTime);
-      const timeDiff = prayerDateTime.getTime() - currentTime;
-      const minutesDiff = Math.floor(timeDiff / (1000 * 60));
-
-      // Notify 5 minutes before prayer
-      if (minutesDiff === 5) {
-        const today = now.toDateString();
-        const notificationKey = `reminder-${prayerName}-${today}`;
+      
+      // Check for reminder notification (only if reminderMinutes > 0)
+      else if (reminderMinutes > 0 && minutesDiff === reminderMinutes) {
+        const reminderKey = `reminder-${prayerName}-${today}`;
         
-        if (lastNotifiedPrayer !== notificationKey) {
-          triggerUpcomingPrayerNotification(prayerName, prayerTime);
-          setLastNotifiedPrayer(notificationKey);
-          localStorage.setItem('lastNotifiedPrayer', notificationKey);
+        if (lastNotifiedPrayer !== reminderKey) {
+          triggerUpcomingPrayerNotification(prayerName, prayerTime, reminderMinutes);
+          // Don't update lastNotifiedPrayer for reminders, only for actual prayer times
         }
       }
     });
   };
+
+  // This function is now integrated into checkPrayerTime
 
   const convertTo24Hour = (time12h) => {
     const [time, modifier] = time12h.split(' ');
@@ -156,21 +153,72 @@ const PrayerNotification = () => {
       playPrayerAlarm();
     }
 
-    // Show browser notification
+    // Show browser notification with enhanced mobile support
     if (notificationPermission === 'granted') {
-      new Notification(`Prayer Time: ${prayerName}`, {
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      const notificationOptions = {
         body: `It's time for ${prayerName} prayer. May Allah accept your prayers.`,
         icon: '/favicon.ico',
         badge: '/favicon.ico',
         tag: `prayer-${prayerName}`,
         requireInteraction: true,
-        actions: [
+        silent: false,
+        vibrate: [200, 100, 200, 100, 200], // Vibration pattern for mobile
+        data: {
+          prayerName: prayerName,
+          prayerTime: prayerTime,
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      // Add actions for supported browsers
+      if ('serviceWorker' in navigator && 'actions' in Notification.prototype) {
+        notificationOptions.actions = [
+          {
+            action: 'mark-prayed',
+            title: '✅ Mark as Prayed',
+            icon: '/favicon.ico'
+          },
+          {
+            action: 'remind-later',
+            title: '⏰ Remind in 5 min',
+            icon: '/favicon.ico'
+          },
           {
             action: 'dismiss',
-            title: 'Dismiss'
+            title: '❌ Dismiss'
           }
-        ]
-      });
+        ];
+      }
+
+      // For mobile devices, add additional properties
+      if (isMobile) {
+        notificationOptions.persistent = true;
+        notificationOptions.sticky = true;
+        notificationOptions.renotify = true;
+      }
+
+      const notification = new Notification(`🕌 Prayer Time: ${prayerName}`, notificationOptions);
+      
+      // Handle notification clicks
+      notification.onclick = function(event) {
+        event.preventDefault();
+        window.focus();
+        notification.close();
+        
+        // You can add navigation to prayer page here
+        if (window.location.hash !== '#/ibadyat') {
+          window.location.hash = '#/ibadyat';
+        }
+      };
+
+      // Auto-close notification after 30 seconds if not interacted
+      setTimeout(() => {
+        if (notification) {
+          notification.close();
+        }
+      }, 30000);
     }
 
     // Show in-app notification
@@ -187,21 +235,52 @@ const PrayerNotification = () => {
     setNotifications(prev => [...prev, notification]);
   };
 
-  const triggerUpcomingPrayerNotification = (prayerName, prayerTime) => {
+  const triggerUpcomingPrayerNotification = (prayerName, prayerTime, minutes = 5) => {
     // Play reminder sound
     if (soundEnabled && !isAlarmPlaying) {
       playReminderSound();
     }
 
-    // Show browser notification
+    // Show browser notification with mobile enhancements
     if (notificationPermission === 'granted') {
-      new Notification(`Upcoming Prayer: ${prayerName}`, {
-        body: `${prayerName} prayer will begin in 5 minutes. Please prepare for prayer.`,
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      const notificationOptions = {
+        body: `${prayerName} prayer will begin in ${minutes} minutes. Please prepare for prayer.`,
         icon: '/favicon.ico',
         badge: '/favicon.ico',
         tag: `reminder-${prayerName}`,
-        requireInteraction: false
-      });
+        requireInteraction: false,
+        silent: true, // Gentle reminder, not intrusive
+        vibrate: [100, 50, 100], // Gentle vibration pattern
+        data: {
+          prayerName: prayerName,
+          prayerTime: prayerTime,
+          reminderMinutes: minutes,
+          timestamp: new Date().toISOString()
+        }
+      };
+
+      // For mobile devices, make it slightly more persistent
+      if (isMobile) {
+        notificationOptions.requireInteraction = true;
+      }
+
+      const notification = new Notification(`⏰ Upcoming: ${prayerName}`, notificationOptions);
+      
+      // Handle notification clicks
+      notification.onclick = function(event) {
+        event.preventDefault();
+        window.focus();
+        notification.close();
+      };
+
+      // Auto-close reminder notification after 15 seconds
+      setTimeout(() => {
+        if (notification) {
+          notification.close();
+        }
+      }, 15000);
     }
 
     // Show in-app notification
@@ -209,7 +288,7 @@ const PrayerNotification = () => {
       id: Date.now(),
       type: 'reminder',
       title: `Upcoming: ${prayerName} Prayer`,
-      message: `${prayerName} prayer will begin in 5 minutes. Please prepare for prayer.`,
+      message: `${prayerName} prayer will begin in ${minutes} minutes. Please prepare for prayer.`,
       prayerName: prayerName,
       prayerTime: prayerTime,
       timestamp: new Date()

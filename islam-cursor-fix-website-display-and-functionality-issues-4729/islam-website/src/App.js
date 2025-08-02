@@ -9,6 +9,7 @@ import Home from './components/Home';
 import Quran from './components/Quran';
 import Ibadyat from './components/Ibadyat';
 import Settings from './components/Settings';
+import Sidebar from './components/Sidebar';
 import PrayerNotification from './components/PrayerNotification';
 import Footer from './components/Footer';
 
@@ -33,6 +34,8 @@ function App() {
     };
   });
 
+  const [showSidebar, setShowSidebar] = useState(false);
+
   useEffect(() => {
     document.body.className = theme;
     localStorage.setItem('theme', theme);
@@ -49,7 +52,24 @@ function App() {
 
   return (
     <Router>
-      <div className="App">
+      <div className="App" data-theme={theme}>
+        {/* Sidebar Toggle Button */}
+        <button 
+          className="sidebar-toggle-btn"
+          onClick={() => setShowSidebar(true)}
+          title="Settings"
+        >
+          ⚙️
+        </button>
+        
+        {/* Sidebar */}
+        <Sidebar 
+          show={showSidebar}
+          onHide={() => setShowSidebar(false)}
+          theme={theme}
+          toggleTheme={toggleTheme}
+        />
+        
         <Navbar theme={theme} userProfile={userProfile} />
         <PrayerNotification />
         <Routes>

@@ -266,15 +266,27 @@ const Settings = ({ theme, toggleTheme, userProfile, updateProfile }) => {
             <div className="setting-group">
               <h5 className="mb-3">App Information</h5>
               <div className="app-info">
-                <p><strong>Version:</strong> 1.0.0</p>
+                <p><strong>Version:</strong> 2.0.0</p>
                 <p><strong>Developer:</strong> Islamic App Team</p>
+                <p><strong>Last Updated:</strong> {new Date().toLocaleDateString()}</p>
                 <p><strong>Features:</strong></p>
                 <ul className="feature-list">
-                  <li>Prayer Times & Notifications</li>
-                  <li>Quran Reading & Audio</li>
-                  <li>Islamic Tools & Resources</li>
-                  <li>Worship Guidelines</li>
+                  <li>✅ Prayer Times & Smart Notifications</li>
+                  <li>✅ Quran Reading & Audio Recitation</li>
+                  <li>✅ Islamic Tools & Resources</li>
+                  <li>✅ Worship Guidelines (Ibadyat)</li>
+                  <li>✅ Mobile Lock Screen Notifications</li>
+                  <li>✅ Dark Mode Support</li>
+                  <li>✅ Customizable Prayer Reminders</li>
+                  <li>✅ Responsive Design</li>
+                  <li>✅ Offline Support</li>
                 </ul>
+                <div className="mt-3">
+                  <small className="text-muted">
+                    May Allah accept your worship and grant you peace. 
+                    This app is developed to help Muslims in their daily prayers and Islamic practices.
+                  </small>
+                </div>
               </div>
             </div>
           </motion.div>

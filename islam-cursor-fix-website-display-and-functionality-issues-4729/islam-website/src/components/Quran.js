@@ -44,6 +44,12 @@ const Quran = () => {
       return;
     }
 
+    // Ensure surah has complete text data
+    if (!surah.text || surah.text.length === 0) {
+      showError(`${surah.name} text is not available yet. This feature is being enhanced.`);
+      return;
+    }
+
     setSelectedSurah(surah);
     setShowReading(true);
     setLoading(true);
@@ -225,7 +231,7 @@ const Quran = () => {
                         whileHover={{ y: -5 }}
                       >
                         <Card 
-                          className={`surah-card ${selectedSurah?.number === surah.number ? 'selected' : ''} h-100`}
+                          className={`surah-card ${selectedSurah?.number === surah.number ? 'selected' : ''} ${!surah.text || surah.text.length === 0 ? 'incomplete' : ''} h-100`}
                           onClick={() => handleSurahClick(surah)}
                         >
                           <Card.Body>
@@ -233,9 +239,22 @@ const Quran = () => {
                               <div className="surah-number">
                                 {surah.number}
                               </div>
-                              {selectedSurah?.number === surah.number && (
-                                <FaCheckCircle className="text-success" />
-                              )}
+                              <div className="d-flex align-items-center">
+                                {!surah.text || surah.text.length === 0 ? (
+                                  <Badge bg="warning" className="me-2" title="Text not complete">
+                                    <FaExclamationTriangle className="me-1" />
+                                    Coming Soon
+                                  </Badge>
+                                ) : (
+                                  <Badge bg="success" className="me-2" title="Full text available">
+                                    <FaCheckCircle className="me-1" />
+                                    Complete
+                                  </Badge>
+                                )}
+                                {selectedSurah?.number === surah.number && (
+                                  <FaCheckCircle className="text-success" />
+                                )}
+                              </div>
                             </div>
                             <h5 className="surah-name">{surah.name}</h5>
                             <p className="surah-arabic">{surah.arabic}</p>

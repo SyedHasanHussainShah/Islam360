@@ -2,11 +2,6 @@ import axios from 'axios';
 
 // City coordinates
 const CITIES = {
-  gujranwala: {
-    name: 'Gujranwala',
-    lat: 32.1877,
-    lng: 74.1945
-  },
   lahore: {
     name: 'Lahore',
     lat: 31.5204,
@@ -20,7 +15,7 @@ const CITIES = {
 };
 
 // Default city
-let currentCity = 'gujranwala';
+let currentCity = 'lahore';
 
 export const setCurrentCity = (city) => {
   if (CITIES[city]) {
@@ -43,7 +38,7 @@ export const getPrayerTimes = async (date = new Date(), city = currentCity) => {
     const month = date.getMonth() + 1;
     const day = date.getDate();
     
-    const cityData = CITIES[city] || CITIES.gujranwala;
+    const cityData = CITIES[city] || CITIES.lahore;
     
     const response = await axios.get(
       `https://api.aladhan.com/v1/timings/${day}-${month}-${year}`,
@@ -72,13 +67,6 @@ export const getPrayerTimes = async (date = new Date(), city = currentCity) => {
     console.error('Error fetching prayer times:', error);
     // Fallback prayer times for the selected city
     const fallbackTimes = {
-      gujranwala: {
-        Fajr: '05:30',
-        Dhuhr: '12:15',
-        Asr: '15:45',
-        Maghrib: '17:30',
-        Isha: '19:00'
-      },
       lahore: {
         Fajr: '05:25',
         Dhuhr: '12:10',
@@ -95,8 +83,8 @@ export const getPrayerTimes = async (date = new Date(), city = currentCity) => {
       }
     };
     
-    const cityData = CITIES[city] || CITIES.gujranwala;
-    const times = fallbackTimes[city] || fallbackTimes.gujranwala;
+    const cityData = CITIES[city] || CITIES.lahore;
+    const times = fallbackTimes[city] || fallbackTimes.lahore;
     
     return {
       ...times,
@@ -118,21 +106,41 @@ export const getCurrentPrayer = (prayerTimes) => {
     { name: 'Isha', time: convertToMinutes(prayerTimes.Isha) }
   ];
   
+  // Find current prayer period
+  let currentPrayerIndex = -1;
+  let nextPrayerIndex = 0;
+  
   for (let i = 0; i < prayers.length; i++) {
-    if (currentTime < prayers[i].time) {
-      return {
-        current: i > 0 ? prayers[i - 1] : prayers[prayers.length - 1],
-        next: prayers[i],
-        timeRemaining: prayers[i].time - currentTime
-      };
+    if (currentTime >= prayers[i].time) {
+      currentPrayerIndex = i;
+    } else {
+      nextPrayerIndex = i;
+      break;
     }
   }
   
-  // If past Isha, next prayer is Fajr
+  // If we're past all prayers today, next is Fajr tomorrow
+  if (currentPrayerIndex === prayers.length - 1 && currentTime >= prayers[prayers.length - 1].time) {
+    return {
+      current: prayers[prayers.length - 1],
+      next: prayers[0],
+      timeRemaining: (24 * 60) + prayers[0].time - currentTime
+    };
+  }
+  
+  // If before Fajr, we're in Isha period from previous day
+  if (currentPrayerIndex === -1) {
+    return {
+      current: prayers[prayers.length - 1], // Isha from yesterday
+      next: prayers[0], // Fajr today
+      timeRemaining: prayers[0].time - currentTime
+    };
+  }
+  
   return {
-    current: prayers[prayers.length - 1],
-    next: prayers[0],
-    timeRemaining: (24 * 60) + prayers[0].time - currentTime
+    current: prayers[currentPrayerIndex],
+    next: prayers[nextPrayerIndex],
+    timeRemaining: prayers[nextPrayerIndex].time - currentTime
   };
 };
 

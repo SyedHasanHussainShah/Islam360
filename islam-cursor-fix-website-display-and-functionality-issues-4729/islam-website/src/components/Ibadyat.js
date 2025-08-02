@@ -32,7 +32,7 @@ const Ibadyat = () => {
           Asr: '15:45',
           Maghrib: '18:30',
           Isha: '20:00',
-          city: currentCity === 'lahore' ? 'Lahore' : currentCity === 'islamabad' ? 'Islamabad' : 'Gujranwala'
+          city: currentCity === 'lahore' ? 'Lahore' : 'Islamabad'
         };
         setPrayerTimes(fallbackTimes);
         setCurrentPrayerInfo(getCurrentPrayer(fallbackTimes));
@@ -357,11 +357,25 @@ const Ibadyat = () => {
           </Modal.Header>
           <Modal.Body>
             {selectedTopic && (
-              <div>
+              <div className="ibadyat-content">
                 <p className="mb-4">{selectedTopic.content.description}</p>
                 
+                {selectedTopic.content.prayers && (
+                  <>
+                    <h5>Today's Prayer Times:</h5>
+                    <div className="prayer-times-list">
+                      {selectedTopic.content.prayers.map(([prayerName, prayerTime], index) => (
+                        <div key={index} className="prayer-time-item">
+                          <div className="prayer-name">{prayerName}</div>
+                          <div className="prayer-time">{prayerTime}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+                
                 <h5>Importance:</h5>
-                <ul className="mb-4">
+                <ul className="importance-list mb-4">
                   {selectedTopic.content.importance.map((item, index) => (
                     <li key={index}>{item}</li>
                   ))}
@@ -370,7 +384,7 @@ const Ibadyat = () => {
                 {selectedTopic.content.rituals && (
                   <>
                     <h5>Rituals:</h5>
-                    <ul className="mb-4">
+                    <ul className="importance-list mb-4">
                       {selectedTopic.content.rituals.map((ritual, index) => (
                         <li key={index}>{ritual}</li>
                       ))}
@@ -381,7 +395,7 @@ const Ibadyat = () => {
                 {selectedTopic.content.types && (
                   <>
                     <h5>Types:</h5>
-                    <ul className="mb-4">
+                    <ul className="importance-list mb-4">
                       {selectedTopic.content.types.map((type, index) => (
                         <li key={index}>{type}</li>
                       ))}
@@ -390,7 +404,7 @@ const Ibadyat = () => {
                 )}
 
                 <h5>Tips:</h5>
-                <ul>
+                <ul className="tips-list">
                   {selectedTopic.content.tips.map((tip, index) => (
                     <li key={index}>{tip}</li>
                   ))}
