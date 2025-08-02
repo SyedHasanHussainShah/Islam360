@@ -65,19 +65,19 @@ export const getPrayerTimes = async (date = new Date(), city = currentCity) => {
     };
   } catch (error) {
     console.error('Error fetching prayer times:', error);
-    // Fallback prayer times for the selected city
+    // Fallback prayer times for the selected city with corrected Asr times
     const fallbackTimes = {
       lahore: {
         Fajr: '05:25',
         Dhuhr: '12:10',
-        Asr: '15:40',
+        Asr: '15:45', // Corrected Asr time for Lahore
         Maghrib: '17:25',
         Isha: '18:55'
       },
       islamabad: {
         Fajr: '05:35',
         Dhuhr: '12:20',
-        Asr: '15:50',
+        Asr: '15:55', // Corrected Asr time for Islamabad
         Maghrib: '17:35',
         Isha: '19:05'
       }
