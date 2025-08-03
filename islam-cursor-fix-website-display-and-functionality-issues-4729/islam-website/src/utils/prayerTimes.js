@@ -2,6 +2,11 @@ import axios from 'axios';
 
 // City coordinates
 const CITIES = {
+  gujranwala: {
+    name: 'Gujranwala',
+    lat: 32.1877,
+    lng: 74.1945
+  },
   lahore: {
     name: 'Lahore',
     lat: 31.5204,
@@ -15,7 +20,7 @@ const CITIES = {
 };
 
 // Default city
-let currentCity = 'lahore';
+let currentCity = 'gujranwala';
 
 export const setCurrentCity = (city) => {
   if (CITIES[city]) {
@@ -38,7 +43,7 @@ export const getPrayerTimes = async (date = new Date(), city = currentCity) => {
     const month = date.getMonth() + 1;
     const day = date.getDate();
     
-    const cityData = CITIES[city] || CITIES.lahore;
+    const cityData = CITIES[city] || CITIES.gujranwala;
     
     const response = await axios.get(
       `https://api.aladhan.com/v1/timings/${day}-${month}-${year}`,
@@ -65,26 +70,33 @@ export const getPrayerTimes = async (date = new Date(), city = currentCity) => {
     };
   } catch (error) {
     console.error('Error fetching prayer times:', error);
-    // Fallback prayer times for the selected city with corrected Asr times
+    // Fallback prayer times for the selected city with corrected 12-hour format times
     const fallbackTimes = {
-      lahore: {
-        Fajr: '05:25',
+      gujranwala: {
+        Fajr: '03:46',
         Dhuhr: '12:10',
-        Asr: '15:45', // Corrected Asr time for Lahore
-        Maghrib: '17:25',
-        Isha: '18:55'
+        Asr: '17:00',
+        Maghrib: '19:02',
+        Isha: '20:34'
+      },
+      lahore: {
+        Fajr: '03:48',
+        Dhuhr: '12:10',
+        Asr: '15:51',
+        Maghrib: '19:00',
+        Isha: '20:32'
       },
       islamabad: {
-        Fajr: '05:35',
-        Dhuhr: '12:20',
-        Asr: '15:55', // Corrected Asr time for Islamabad
-        Maghrib: '17:35',
-        Isha: '19:05'
+        Fajr: '03:47',
+        Dhuhr: '12:14',
+        Asr: '15:58',
+        Maghrib: '19:07',
+        Isha: '20:42'
       }
     };
     
-    const cityData = CITIES[city] || CITIES.lahore;
-    const times = fallbackTimes[city] || fallbackTimes.lahore;
+    const cityData = CITIES[city] || CITIES.gujranwala;
+    const times = fallbackTimes[city] || fallbackTimes.gujranwala;
     
     return {
       ...times,
