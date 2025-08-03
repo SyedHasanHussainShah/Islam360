@@ -27,11 +27,11 @@ const Ibadyat = () => {
         setError('Failed to load prayer times. Please try again later.');
         // Set fallback prayer times for major cities
         const fallbackTimes = {
-          Fajr: '05:30',
-          Dhuhr: '12:15',
-          Asr: '15:45',
-          Maghrib: '18:30',
-          Isha: '20:00',
+          Fajr: currentCity === 'lahore' ? '03:48' : '03:47',
+          Dhuhr: currentCity === 'lahore' ? '12:10' : '12:14',
+          Asr: currentCity === 'lahore' ? '15:51' : '15:58',
+          Maghrib: currentCity === 'lahore' ? '19:00' : '19:07',
+          Isha: currentCity === 'lahore' ? '20:32' : '20:42',
           city: currentCity === 'lahore' ? 'Lahore' : 'Islamabad'
         };
         setPrayerTimes(fallbackTimes);
