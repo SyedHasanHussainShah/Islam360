@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Modal, Button, Alert, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Card, Modal, Button, Alert, Badge, ButtonGroup } from 'react-bootstrap';
 import { motion } from 'framer-motion';
 import { FaPray, FaKaaba, FaStar, FaMoon, FaClock, FaExclamationTriangle, FaCalendarAlt, FaMapMarkerAlt } from 'react-icons/fa';
-import { getPrayerTimes, getCurrentPrayer, getCurrentCity } from '../utils/prayerTimes';
+import { getPrayerTimes, getCurrentPrayer, getCurrentCity, isCurrentPrayerTime, isNextPrayerTime, isExactPrayerTime } from '../utils/prayerTimes';
 
 const Ibadyat = () => {
   const [prayerTimes, setPrayerTimes] = useState(null);
@@ -12,7 +12,7 @@ const Ibadyat = () => {
   const [error, setError] = useState(null);
   const [currentPrayerInfo, setCurrentPrayerInfo] = useState(null);
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [currentCity, setCurrentCity] = useState(getCurrentCity());
+  const [currentCity, setCurrentCity] = useState('lahore');
 
   useEffect(() => {
     const fetchPrayerTimes = async () => {
@@ -24,16 +24,33 @@ const Ibadyat = () => {
         setCurrentPrayerInfo(getCurrentPrayer(times));
       } catch (err) {
         console.error('Error fetching prayer times:', err);
-        setError('Failed to load prayer times. Please try again later.');
-        // Set fallback prayer times for major cities
-        const fallbackTimes = {
-          Fajr: '05:30',
-          Dhuhr: '12:15',
-          Asr: '15:45',
-          Maghrib: '18:30',
-          Isha: '20:00',
-          city: currentCity === 'lahore' ? 'Lahore' : 'Islamabad'
+        setError('Failed to load prayer times. Using default times.');
+        // Default prayer times for major cities
+        const defaultTimes = {
+          lahore: {
+            Fajr: '03:49',
+            Dhuhr: '12:09',
+            Asr: '16:58',
+            Maghrib: '18:57',
+            Isha: '20:28',
+          },
+          islamabad: {
+            Fajr: '03:48',
+            Dhuhr: '12:10',
+            Asr: '15:51',
+            Maghrib: '19:00',
+            Isha: '20:32',
+          },
+          gujranwala: {
+            Fajr: '03:46',
+            Dhuhr: '12:10',
+            Asr: '17:00',
+            Maghrib: '19:02',
+            Isha: '20:34',
+          },
         };
+
+        const fallbackTimes = defaultTimes[currentCity];
         setPrayerTimes(fallbackTimes);
         setCurrentPrayerInfo(getCurrentPrayer(fallbackTimes));
       } finally {
@@ -194,14 +211,26 @@ const Ibadyat = () => {
   };
 
   const getPrayerStatus = (prayerName, prayerTime) => {
-    if (!currentPrayerInfo) return 'upcoming';
+    if (!prayerTimes) return 'upcoming';
     
-    if (currentPrayerInfo.current?.name === prayerName) {
+    // Check if it's exactly prayer time (within 1 minute) - show as "current"
+    if (isExactPrayerTime(prayerName, prayerTimes)) {
       return 'current';
-    } else if (currentPrayerInfo.next?.name === prayerName) {
+    }
+    // Check if it's the next upcoming prayer
+    else if (isNextPrayerTime(prayerName, prayerTimes)) {
       return 'next';
     }
+    // Check if we're in this prayer period
+    else if (isCurrentPrayerTime(prayerName, prayerTimes)) {
+      return 'passed'; // Prayer time has passed but we're still in this period
+    }
+    
     return 'upcoming';
+  };
+
+  const handleCityChange = (city) => {
+    setCurrentCity(city);
   };
 
   const ibadyatData = getIbadyatData();
@@ -259,7 +288,7 @@ const Ibadyat = () => {
                   </h3>
                   <p className="mb-0">
                     <FaMapMarkerAlt className="me-2" />
-                    {currentCity === 'lahore' ? 'Lahore' : 'Islamabad'} Region
+                    {currentCity === 'lahore' ? 'Lahore' : currentCity === 'islamabad' ? 'Islamabad' : 'Gujranwala'} Region
                   </p>
                 </Card.Header>
                 <Card.Body>

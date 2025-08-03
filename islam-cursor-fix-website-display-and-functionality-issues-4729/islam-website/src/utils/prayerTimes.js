@@ -11,6 +11,11 @@ const CITIES = {
     name: 'Islamabad',
     lat: 33.6844,
     lng: 73.0479
+  },
+  gujranwala: {
+    name: 'Gujranwala',
+    lat: 32.1877,
+    lng: 74.1945
   }
 };
 
@@ -65,21 +70,28 @@ export const getPrayerTimes = async (date = new Date(), city = currentCity) => {
     };
   } catch (error) {
     console.error('Error fetching prayer times:', error);
-    // Fallback prayer times for the selected city with corrected Asr times
+    // Fallback prayer times for the selected city
     const fallbackTimes = {
       lahore: {
-        Fajr: '05:25',
-        Dhuhr: '12:10',
-        Asr: '15:45', // Corrected Asr time for Lahore
-        Maghrib: '17:25',
-        Isha: '18:55'
+        Fajr: '03:49',
+        Dhuhr: '12:09',
+        Asr: '16:58',
+        Maghrib: '18:57',
+        Isha: '20:28'
       },
       islamabad: {
-        Fajr: '05:35',
-        Dhuhr: '12:20',
-        Asr: '15:55', // Corrected Asr time for Islamabad
-        Maghrib: '17:35',
-        Isha: '19:05'
+        Fajr: '03:48',
+        Dhuhr: '12:10',
+        Asr: '15:51',
+        Maghrib: '19:00',
+        Isha: '20:32'
+      },
+      gujranwala: {
+        Fajr: '03:46',
+        Dhuhr: '12:10',
+        Asr: '17:00',
+        Maghrib: '19:02',
+        Isha: '20:34'
       }
     };
     
@@ -95,8 +107,10 @@ export const getPrayerTimes = async (date = new Date(), city = currentCity) => {
 };
 
 export const getCurrentPrayer = (prayerTimes) => {
+  // Get current time in Pakistan Standard Time (UTC+5)
   const now = new Date();
-  const currentTime = now.getHours() * 60 + now.getMinutes();
+  const pakistanTime = new Date(now.getTime() + (5 * 60 * 60 * 1000)); // Add 5 hours for PST
+  const currentTime = pakistanTime.getHours() * 60 + pakistanTime.getMinutes();
   
   const prayers = [
     { name: 'Fajr', time: convertToMinutes(prayerTimes.Fajr) },
@@ -106,41 +120,50 @@ export const getCurrentPrayer = (prayerTimes) => {
     { name: 'Isha', time: convertToMinutes(prayerTimes.Isha) }
   ];
   
-  // Find current prayer period
+  // Find which prayer period we're currently in
   let currentPrayerIndex = -1;
   let nextPrayerIndex = 0;
   
+  // Check if we're between prayers
   for (let i = 0; i < prayers.length; i++) {
-    if (currentTime >= prayers[i].time) {
+    const nextIndex = (i + 1) % prayers.length;
+    const currentPrayerTime = prayers[i].time;
+    let nextPrayerTime = prayers[nextIndex].time;
+    
+    // Handle overnight period (Isha to Fajr)
+    if (nextIndex === 0) {
+      nextPrayerTime += 24 * 60; // Add 24 hours for next day Fajr
+    }
+    
+    // Check if current time is between this prayer and the next
+    if (currentTime >= currentPrayerTime && 
+        (nextIndex !== 0 ? currentTime < nextPrayerTime : currentTime < prayers[nextIndex].time || currentTime >= currentPrayerTime)) {
       currentPrayerIndex = i;
-    } else {
-      nextPrayerIndex = i;
+      nextPrayerIndex = nextIndex;
       break;
     }
   }
   
-  // If we're past all prayers today, next is Fajr tomorrow
-  if (currentPrayerIndex === prayers.length - 1 && currentTime >= prayers[prayers.length - 1].time) {
-    return {
-      current: prayers[prayers.length - 1],
-      next: prayers[0],
-      timeRemaining: (24 * 60) + prayers[0].time - currentTime
-    };
+  // If we're before Fajr (early morning), we're in Isha period from previous day
+  if (currentPrayerIndex === -1 && currentTime < prayers[0].time) {
+    currentPrayerIndex = 4; // Isha
+    nextPrayerIndex = 0; // Fajr
   }
   
-  // If before Fajr, we're in Isha period from previous day
-  if (currentPrayerIndex === -1) {
-    return {
-      current: prayers[prayers.length - 1], // Isha from yesterday
-      next: prayers[0], // Fajr today
-      timeRemaining: prayers[0].time - currentTime
-    };
+  // Calculate time remaining to next prayer
+  let timeRemaining;
+  if (nextPrayerIndex === 0 && currentPrayerIndex === 4) {
+    // From Isha to Fajr next day
+    timeRemaining = (24 * 60) + prayers[0].time - currentTime;
+  } else {
+    timeRemaining = prayers[nextPrayerIndex].time - currentTime;
   }
   
   return {
-    current: prayers[currentPrayerIndex],
+    current: prayers[currentPrayerIndex] || null,
     next: prayers[nextPrayerIndex],
-    timeRemaining: prayers[nextPrayerIndex].time - currentTime
+    timeRemaining: Math.max(0, timeRemaining),
+    currentTimeInPST: `${String(pakistanTime.getHours()).padStart(2, '0')}:${String(pakistanTime.getMinutes()).padStart(2, '0')}`
   };
 };
 
@@ -172,4 +195,45 @@ export const formatTimeRemaining = (minutes) => {
     return `${hours}h ${mins}m`;
   }
   return `${mins}m`;
+};
+
+// Helper function to check if we're currently in a specific prayer time
+export const isCurrentPrayerTime = (prayerName, prayerTimes) => {
+  // Get current time in Pakistan Standard Time (UTC+5)
+  const now = new Date();
+  const pakistanTime = new Date(now.getTime() + (5 * 60 * 60 * 1000));
+  const currentTime = pakistanTime.getHours() * 60 + pakistanTime.getMinutes();
+  
+  const prayerTime = convertToMinutes(prayerTimes[prayerName]);
+  
+  // Consider it "current" if we're within 5 minutes of the prayer time
+  // OR if we're in the prayer period and it's the exact prayer time
+  const timeDifference = Math.abs(currentTime - prayerTime);
+  
+  if (timeDifference <= 5) {
+    return true;
+  }
+  
+  // Also check if this is the active prayer period
+  const currentPrayerInfo = getCurrentPrayer(prayerTimes);
+  return currentPrayerInfo.current && currentPrayerInfo.current.name === prayerName;
+};
+
+// Helper function to check if a prayer is the next upcoming prayer
+export const isNextPrayerTime = (prayerName, prayerTimes) => {
+  const currentPrayerInfo = getCurrentPrayer(prayerTimes);
+  return currentPrayerInfo.next && currentPrayerInfo.next.name === prayerName;
+};
+
+// Helper function to check if it's exactly prayer time (within 1 minute)
+export const isExactPrayerTime = (prayerName, prayerTimes) => {
+  // Get current time in Pakistan Standard Time (UTC+5)
+  const now = new Date();
+  const pakistanTime = new Date(now.getTime() + (5 * 60 * 60 * 1000));
+  const currentTime = pakistanTime.getHours() * 60 + pakistanTime.getMinutes();
+  
+  const prayerTime = convertToMinutes(prayerTimes[prayerName]);
+  
+  // Consider it exact prayer time if we're within 1 minute
+  return Math.abs(currentTime - prayerTime) <= 1;
 };
