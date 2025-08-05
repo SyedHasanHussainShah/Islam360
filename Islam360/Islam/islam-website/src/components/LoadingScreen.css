@@ -1,0 +1,82 @@
+/* Islamic green background */
+.loading-container {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: #009900; /* Islamic green */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Mosque Icon */
+.mosque-icon-inner {
+  font-size: 70px;
+  color: #facc15;
+  filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.8));
+  margin-bottom: 1rem;
+}
+
+/* Title */
+.app-title {
+  font-size: 40px;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  letter-spacing: 1px;
+}
+.app-title .highlight {
+  color: #facc15;
+}
+
+/* Quran Verse */
+.quran-verse {
+  font-size: 14px;
+  max-width: 400px;
+  color: #e0e0e0;
+  margin-bottom: 2rem;
+  font-style: italic;
+}
+.verse-ref {
+  font-size: 12px;
+  color: #b0b0b0;
+}
+
+/* Progress bar */
+.progress-bar-container {
+  width: 280px;
+  height: 10px;
+  background-color: rgb(57,255,20);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+.progress-bar-fill {
+  height: 100%;
+  background-color: #facc15;
+  border-radius: 9999px;
+  transition: width 0.2s linear;
+}
+
+/* Quran icon rotation */
+.quran-icon {
+  font-size: 22px;
+  color: #facc15;
+  margin-bottom: 10px;
+}
+
+/* Pulse */
+.loading-text {
+  font-size: 14px;
+  color: #eeeeee;
+  animation: pulse 1.5s infinite;
+  margin-top: 8px;
+}
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
